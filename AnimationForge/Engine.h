@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "Clock.h"
+#include "Animation4ge.h"
 
 class Engine
 {
@@ -19,6 +20,5 @@ public:
 	Engine operator =(const Engine& engine) = delete;
 	void Go();
 };
-
 
 

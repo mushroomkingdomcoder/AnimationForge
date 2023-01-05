@@ -2,7 +2,11 @@
 
 Engine::Engine()
 	:
-	wnd(1024, 576, "AnimationForge", { { 1024,576 } }),
+	wnd
+	(
+		Animation4ge::WindowWidth, Animation4ge::WindowHeight, "Animation Forge",
+		{ Animation4ge::BackgroundLayerRes,Animation4ge::MainLayerRes,Animation4ge::TextLayerRes,Animation4ge::UILayerRes }
+	),
 	kbd(wnd.kbd),
 	mouse(wnd.mouse),
 	gfx(wnd.gfx()),

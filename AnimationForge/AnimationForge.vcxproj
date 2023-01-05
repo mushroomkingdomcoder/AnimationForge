@@ -196,6 +196,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="Animation4ge.h" />
     <ClInclude Include="BaseException.h" />
     <ClInclude Include="Camera2D.h" />
     <ClInclude Include="Clock.h" />

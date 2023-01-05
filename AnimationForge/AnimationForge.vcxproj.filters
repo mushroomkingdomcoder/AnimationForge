@@ -200,6 +200,9 @@
     <ClInclude Include="Tile.h">
       <Filter>Graphics\Bitmap</Filter>
     </ClInclude>
+    <ClInclude Include="Animation4ge.h">
+      <Filter>App</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BrightnessPS.hlsl">

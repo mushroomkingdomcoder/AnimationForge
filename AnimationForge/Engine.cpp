@@ -10,7 +10,8 @@ Engine::Engine()
 	kbd(wnd.kbd),
 	mouse(wnd.mouse),
 	gfx(wnd.gfx()),
-	AppClock()
+	AppClock(),
+	app(wnd)
 {
 
 }
@@ -25,7 +26,7 @@ void Engine::Go()
 
 void Engine::UpdateModel()
 {
-
+	app.Go();
 }
 
 void Engine::ComposeFrame()

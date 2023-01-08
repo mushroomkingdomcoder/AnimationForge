@@ -19,6 +19,6 @@ public:
 	Engine(const Engine& engine) = delete;
 	Engine operator =(const Engine& engine) = delete;
 	void Go();
+private:
+	Animation4ge app; 
 };
-
-

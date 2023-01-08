@@ -172,6 +172,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Animation4ge.cpp" />
     <ClCompile Include="AnimationForge.cpp" />
     <ClCompile Include="BaseException.cpp" />
     <ClCompile Include="Camera2D.cpp" />

@@ -23,12 +23,12 @@ public:
 	void SetCurrentFrameTime(float time);
 	float GetFPS() const;
 	void SetFPS(int fps);
+	const std::vector<Image>& GetFrames() const;
+	std::vector<Image>& GetFrames();
 	const Image& GetCurrentFrame() const;
 	const Image& Play(float time_ellapsed);
 	bool PlayAndCheck(float time_ellapsed);
 	void Draw(Graphics& gfx, int x, int y, int layer = 0) const;
 	void DrawWithTransparency(Graphics& gfx, int x, int y, int layer = 0) const;
 };
-
-
 

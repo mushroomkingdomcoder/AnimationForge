@@ -111,6 +111,9 @@
     <ClCompile Include="AnimationForge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Animation4ge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">

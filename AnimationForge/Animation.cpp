@@ -66,6 +66,16 @@ void Animation::SetFPS(int fps)
 	secsPerFrame = 1.0f / (float)fps;
 }
 
+const std::vector<Image>& Animation::GetFrames() const
+{
+	return frames;
+}
+
+std::vector<Image>& Animation::GetFrames()
+{
+	return frames;
+}
+
 const Image& Animation::GetCurrentFrame() const
 {
 	return frames[currentFrame];

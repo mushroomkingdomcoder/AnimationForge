@@ -21,6 +21,14 @@ void Animation4ge::MainMenu()
 			mainMenuInterface.Update(time);
 			mainMenuInterface.Draw();
 		}
+		case State::ImportAnimation:
+		{
+
+		}
+		case State::ExportAnimation:
+		{
+
+		}
 	}
 }
 
@@ -191,6 +199,7 @@ Animation4ge::Animation4ge(Window& wnd)
 	mainMenuInterface.AddInterface(pImportAnimationBtn);
 	mainMenuInterface.AddInterface(pExportAnimationBtn);
 	mainMenuInterface.AddInterface(pEditAnimationBtn);
+	gfx.SetBackgroundColor(BackgroundColor);
 	gfx.ManuallyManage(TextLayer);
 	gfx.ManuallyManage(UILayer);
 	clock.Mark();
@@ -212,3 +221,4 @@ void Animation4ge::Go()
 		throw EXCPT_NOTE("Unknown runtime error occurred!");
 	}
 }
+

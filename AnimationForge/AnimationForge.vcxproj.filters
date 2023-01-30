@@ -114,6 +114,9 @@
     <ClCompile Include="Animation4ge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h">
@@ -205,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="Animation4ge.h">
       <Filter>App</Filter>
+    </ClInclude>
+    <ClInclude Include="FileDialog.h">
+      <Filter>Input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

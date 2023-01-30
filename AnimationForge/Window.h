@@ -27,8 +27,8 @@ private:
 			wcd.cbWndExtra = 0;
 			wcd.hbrBackground = nullptr;
 			wcd.hCursor = nullptr;
-			wcd.hIcon = static_cast<HICON>(LoadImage(hInstance, nullptr, IMAGE_ICON, 32, 32, 0));
-			wcd.hIconSm = static_cast<HICON>(LoadImage(hInstance, nullptr, IMAGE_ICON, 16, 16, 0));
+			wcd.hIcon = nullptr;
+			wcd.hIconSm = nullptr;
 			wcd.lpszMenuName = nullptr;
 			wcd.style = CS_OWNDC | CS_DBLCLKS;
 			RegisterClassEx(&wcd);

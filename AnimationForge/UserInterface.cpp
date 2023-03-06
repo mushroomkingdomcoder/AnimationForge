@@ -15,11 +15,45 @@ void UserInterface::AddInterface(std::unique_ptr<Object>& pInterface)
 	pObjects.emplace_back(std::move(pInterface));
 }
 
+void UserInterface::DisableInterface(int index)
+{
+	assert(index >= 0 && index < pObjects.size());
+	pObjects[index]->isActive = false;
+}
+
+void UserInterface::EnableInterface(int index)
+{
+	assert(index >= 0 && index < pObjects.size());
+	pObjects[index]->isActive = true;
+}
+
+void UserInterface::DisableAll()
+{
+	for (auto& pObject : pObjects)
+	{
+		pObject->isActive = false;
+	}
+}
+
+void UserInterface::EnableAll()
+{
+	for (auto& pObject : pObjects)
+	{
+		pObject->isActive = true;
+	}
+}
+
+bool UserInterface::InterfaceIsEnabled(int index) const
+{
+	assert(index >= 0 && index < pObjects.size());
+	return pObjects[index]->isActive;
+}
+
 void UserInterface::Update(float time_ellapsed)
 {
 	for (auto& pObject : pObjects)
 	{
-		if (pObject->update)
+		if (pObject->update && pObject->isActive)
 		{
 			if (pObject->update(pObject, time_ellapsed))
 			{
@@ -35,10 +69,11 @@ void UserInterface::Draw()
 	{
 		for (auto& pObject : pObjects)
 		{
-			pObject->Draw(gfx, layer, gfcText);
+			if (pObject->isActive)
+			{
+				pObject->Draw(gfx, layer, gfcText);
+			}
 		}
 		drawFlag = false;
 	}
 }
-
-

@@ -1,34 +1,160 @@
 #include "Animation4ge.h"
+#include "FileDialog.h"
 
 using UI = UserInterface;
 using UIGFCA = UI::Graphic<Animation>;
 using UIGFCI = UI::Graphic<Image>;
 
-void Animation4ge::MainMenu()
+void Animation4ge::Go()
 {
 	switch (state)
 	{
 		case State::MainMenu:
 		{
-			float time = clock.Mark();
-			if (stateChange)
-			{
-				gfx.Erase(TextLayer);
-				gfx.Erase(UILayer);
-				Image("graphics\\banner-800x100.bmp").Draw(gfx, 0, 0, UILayer);
-				stateChange = false;
-			}
-			mainMenuInterface.Update(time);
-			mainMenuInterface.Draw();
+			MainMenu();
+			break;
+		}
+		case State::NewAnimation:
+		{
+			MessageBox(nullptr, "Sorry, but this feature has not yet been implemented.", "Error", MB_ICONEXCLAMATION | MB_OK);
+			state = State::MainMenu;
+			stateChange = false;
+			break;
 		}
 		case State::ImportAnimation:
 		{
-
+			ImportAnimation();
+			break;
 		}
 		case State::ExportAnimation:
 		{
-
+			MessageBox(nullptr, "Sorry, but this feature has not yet been implemented.", "Error", MB_ICONEXCLAMATION | MB_OK);
+			state = State::MainMenu;
+			stateChange = false;
+			break;
 		}
+		case State::EditAnimation:
+		{
+			MessageBox(nullptr, "Sorry, but this feature has not yet been implemented.", "Error", MB_ICONEXCLAMATION | MB_OK);
+			state = State::MainMenu;
+			stateChange = false;
+			break;
+		}
+	}
+}
+
+void Animation4ge::MainMenu()
+{
+	if (stateChange)
+	{
+		gfx.Erase(TextLayer);
+		gfx.Erase(UILayer);
+		gfx.Erase(BackgroundLayer);
+		mainMenuInterface.EnableAll();
+		Image("graphics\\banner-800x100.bmp").Draw(gfx, 0, 0, UILayer);
+		stateChange = false;
+	}
+	float time = clock.Mark();
+	mainMenuInterface.Update(time);
+	mainMenuInterface.Draw();
+}
+
+void Animation4ge::ImportAnimation()
+{
+	if (stateChange)
+	{
+		gfcText.ResetDefaults();
+		gfx.Erase(UILayer);
+		gfx.Erase(BackgroundLayer);
+		std::vector<std::wstring> wfiles = FileDialog::OpenFiles({ { L"Animations (.bmp)",L"*.bmp" } }, true, L"Choose an Animation Forge Animation File (.bmp)", L"Animate", L"Animation:");
+		if (!wfiles.empty())
+		{
+			files.clear();
+			files.resize(wfiles.size());
+			for (int i = 0; i < wfiles.size(); ++i)
+			{
+				files[i] = FileDialog::ConvertWString(wfiles[i]);
+			}
+
+			std::ostringstream oss;
+			oss << "Please indicate the width & height of each frame." << std::endl << std::endl << MaxAnimationFrameDim << " x " << MaxAnimationFrameDim << " maximum.";
+			MessageBox(nullptr, oss.str().c_str(), "Import Successful", MB_ICONINFORMATION | MB_OK);
+			gfcText.Write("DoubleCl!ck -> Submit Dimensions\r");
+			gfcText.Write("Imported Animation X of X:");
+			animImportIndex = 0;
+			newAnim = true;
+
+			stateChange = false;
+		}
+		else
+		{
+			MessageBox(nullptr, "No .bmp image files chosen!", "Import Error", MB_ICONEXCLAMATION | MB_OK);
+		}
+	}
+	if (animImportIndex < files.size())
+	{
+		if (newAnim)
+		{
+			gfx.Erase(BackgroundLayer);
+			curImportImg = Image(files[animImportIndex].c_str());
+			if (curImportImg.GetWidth() > MaxAnimationFrameDim)
+			{
+				curImportImg.Crop(MaxAnimationFrameDim, curImportImg.GetHeight(), 0, 0);
+			}
+			if (curImportImg.GetHeight() > MaxAnimationFrameDim)
+			{
+				curImportImg.Crop(curImportImg.GetWidth(), MaxAnimationFrameDim, 0, 0);
+			}
+			curImportImg.AdjustSize((float)FrameZoom, (float)FrameZoom);
+			imgPos = { (WindowWidth - curImportImg.GetWidth()) / 2,(WindowHeight - curImportImg.GetHeight()) / 2 + 16 };
+			curImportImg.Draw(gfx, imgPos.x, imgPos.y, BackgroundLayer);
+
+			sizeSelector = iRect(imgPos, curImportImg.GetWidth(), curImportImg.GetHeight());
+			mousePos = { curImportImg.GetWidth(),curImportImg.GetHeight() };
+			imgRect = sizeSelector;
+
+			gfcText.SetCursorPosition({ 19,1 });
+			std::ostringstream oss;
+			oss << (animImportIndex + 1) << " of " << files.size() << ":   ";
+			gfcText.Write(oss.str());
+
+			newAnim = false;
+		}
+		gfcText.SetCursorPosition({ 0,2 });
+		gfcText.SetTextColor(Colors::BrightRed);
+		std::ostringstream oss;
+		oss << "( " << (mousePos.x / FrameZoom) << " , " << (mousePos.y / FrameZoom) << " )   ";
+		gfcText.Write(oss.str());
+		gfcText.SetTextColor(Colors::White);
+
+		if (imgRect.ContainsPoint({ mouse.GetX(),mouse.GetY() }))
+		{
+			mousePos = { mouse.GetX() - imgPos.x + FrameZoom,mouse.GetY() - imgPos.y + FrameZoom };
+		}
+		else
+		{
+			mousePos = { curImportImg.GetWidth(),curImportImg.GetHeight() };
+		}
+		while (mouse.isActive())
+		{
+			const Mouse::Event& me = mouse.Read();
+			if (me.isLeftDoubleClick())
+			{
+				frameDim = mousePos;
+				Image spriteSheet = Image(files[animImportIndex].c_str());
+				animations.emplace_back(Animation(spriteSheet, frameDim, { spriteSheet.GetWidth() / frameDim.x,spriteSheet.GetHeight() / frameDim.y }, DefaultFPS));
+				animImportIndex++;
+				newAnim = true;
+			}
+		}
+		sizeSelector.SetWidth(mousePos.x);
+		sizeSelector.SetHeight(mousePos.y);
+		sizeSelector.DrawOutline(gfx, FrameSelectorColor, MainLayer);
+	}
+	else
+	{
+		state = State::MainMenu;
+		stateChange = true;
 	}
 }
 
@@ -39,7 +165,7 @@ Animation4ge::Animation4ge(Window& wnd)
 	mouse(wnd.mouse),
 	kbd(wnd.kbd),
 	gfx(wnd.gfx()),
-	gfcText(gfx.GetPixelMap(TextLayer).data(), (vec2i(TextLayerRes) / 16).GetVStruct()),
+	gfcText(gfx.GetPixelMap(TextLayer).data(), (vec2i(TextLayerRes)).GetVStruct()),
 	state(State::MainMenu),
 	stateChange(true),
 	mbd({ { false,mouse,state,stateChange },{ false,mouse,state,stateChange },{ false,mouse,state,stateChange },{ false,mouse,state,stateChange } }),
@@ -202,23 +328,7 @@ Animation4ge::Animation4ge(Window& wnd)
 	gfx.SetBackgroundColor(BackgroundColor);
 	gfx.ManuallyManage(TextLayer);
 	gfx.ManuallyManage(UILayer);
+	gfx.ManuallyManage(BackgroundLayer);
 	clock.Mark();
-}
-
-void Animation4ge::Go()
-{
-	switch (state)
-	{
-	case State::MainMenu:
-	case State::ImportAnimation:
-	case State::ExportAnimation:
-		MainMenu();
-		break;
-	case State::NewAnimation:
-	case State::EditAnimation:
-	case State::EditImage:
-	default:
-		throw EXCPT_NOTE("Unknown runtime error occurred!");
-	}
 }
 

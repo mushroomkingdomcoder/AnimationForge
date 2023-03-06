@@ -154,6 +154,7 @@ LRESULT Window::WindowMessageProceedure(HWND hWnd, UINT Msg, WPARAM wParam, LPAR
 		case WM_KILLFOCUS:
 		{
 			kbd.ClearKeystates();
+			mouse.Reset();
 			break;
 		}
 		case WM_CLOSE:
@@ -295,3 +296,4 @@ std::optional<int> Window::ProcessMessages()
 	}
 	return std::optional<int>();
 }
+

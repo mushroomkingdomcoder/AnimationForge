@@ -9,8 +9,8 @@ Animation::Animation(Image sprite_sheet, int2 sprite_size, int2 sheet_dim, int f
 	currentFrameTime(0.0f),
 	secsPerFrame(1.0f / (float)fps)
 {
-	assert(sprite_size.x * sheet_dim.x == sprite_sheet.GetWidth());
-	assert(sprite_size.y * sheet_dim.y == sprite_sheet.GetHeight());
+	assert(sprite_size.x * sheet_dim.x <= sprite_sheet.GetWidth());
+	assert(sprite_size.y * sheet_dim.y <= sprite_sheet.GetHeight());
 	frames.resize(nFrames);
 	for (int y = 0; y < sheet_dim.y; ++y)
 	{

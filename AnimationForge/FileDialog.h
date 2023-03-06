@@ -42,14 +42,14 @@ public:
 	};
 public:
 	static std::vector<std::wstring> OpenFiles(
-		std::vector<FileType> allowed_files = { { L"All Files"},L"*.*" },
+		std::vector<FileType> allowed_files = { { L"All Files",L"*.*" } },
 		bool multi_file = false,
 		std::wstring title = L"Open File",
 		std::wstring button = L"Open",
 		std::wstring label = L"File name:");
 
 	static std::wstring SaveFile(
-		std::vector<FileType> allowed_files = { { L"All Files"},L"*.*" }, 
+		std::vector<FileType> allowed_files = { { L"All Files",L"*.*" } },
 		std::wstring title = L"Save File", 
 		std::wstring button = L"Save",
 		std::wstring label = L"File name:");
@@ -58,7 +58,7 @@ public:
 		std::wstring title = L"Select Folder",
 		std::wstring button = L"Select",
 		std::wstring label = L"Folder name:");
+
+	static std::string ConvertWString(const std::wstring& wstring);
 };
-
-
 

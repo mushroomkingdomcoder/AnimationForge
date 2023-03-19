@@ -284,7 +284,7 @@ Image Image::AdjustedSize(float x_adjust, float y_adjust) const
 	const float yPxlsPerPxl = (float)height / newHeight;
 	for (int y = 0; y < adjusted.height; ++y)
 	{
-		for (int x = 0; x < adjusted.height; ++x)
+		for (int x = 0; x < adjusted.width; ++x)
 		{
 			adjusted.pImage[y * adjusted.width + x] = pImage[int((float)y * yPxlsPerPxl) * width + int((float)x * xPxlsPerPxl)];
 		}

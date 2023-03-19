@@ -46,6 +46,7 @@ private:
 	} state;
 	bool stateChange;
 private:
+	void ResetDisplay();
 
 	void MainMenu();
 	struct MenuButtonData
@@ -66,6 +67,7 @@ private:
 	std::vector<std::string> files;
 	int animImportIndex;
 	bool newAnim;
+	bool skipAnim;
 	Image curImportImg;
 	int2 imgPos;
 	int2 frameDim;
@@ -73,7 +75,10 @@ private:
 	iRect imgRect;
 	int2 mousePos;
 
+	void EditAnimation();
 public:
 	Animation4ge(Window& wnd);
 	void Go();
 };
+
+

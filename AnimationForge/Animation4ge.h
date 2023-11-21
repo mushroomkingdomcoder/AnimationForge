@@ -19,9 +19,9 @@ private:
 	static constexpr int TextLayer					= 2;
 	static constexpr int UILayer					= 3;
 	static constexpr Color BackgroundColor			= Colors::Black;
-	static constexpr int MaxAnimationFrameDim		= 128;
-	static constexpr int MaxFramesPerAnimation		= 128;
-	static constexpr int MaxAnimations				= 128;
+	static constexpr int MaxAnimationFrameDim		= 256;
+	static constexpr int MaxFramesPerAnimation		= 64;
+	static constexpr int MaxAnimations				= 32;
 	static constexpr int FrameSelectionWindowDim	= 512;
 	static constexpr int FrameZoom					= FrameSelectionWindowDim / MaxAnimationFrameDim;
 	static constexpr int DefaultFPS					= 15;

@@ -127,7 +127,7 @@ Graphics::Graphics(HWND hWnd, int WindowWidth, int WindowHeight, std::vector<int
 	ied[1].InstanceDataStepRate = 0;
 	ied[1].SemanticIndex = 0;
 	ied[1].SemanticName = "TextureCoordinate";
-	GFXCHECK(pDevice->CreateInputLayout(ied, (UINT)std::size(ied), VSS::Default.GetByteCode(), VSS::Default.GetByteCodeSize(), &pILayout));
+	GFXCHECK(pDevice->CreateInputLayout(ied, (UINT)std::size(ied), vss.Default.GetByteCode(), vss.Default.GetByteCodeSize(), &pILayout));
 	pPipeline->IASetInputLayout(pILayout.Get());
 
 	ComPtr<ID3D11BlendState> pColorBlender = nullptr;
@@ -149,8 +149,8 @@ Graphics::Graphics(HWND hWnd, int WindowWidth, int WindowHeight, std::vector<int
 
 	for (Layer& layer : Layers)
 	{
-		GFXCHECK(pDevice->CreatePixelShader(PSS::Default.GetByteCode(), PSS::Default.GetByteCodeSize(), nullptr, &layer.pPShader));
-		GFXCHECK(pDevice->CreateVertexShader(VSS::Default.GetByteCode(), VSS::Default.GetByteCodeSize(), nullptr, &layer.pVShader));
+		GFXCHECK(pDevice->CreatePixelShader(pss.Default.GetByteCode(), pss.Default.GetByteCodeSize(), nullptr, &layer.pPShader));
+		GFXCHECK(pDevice->CreateVertexShader(vss.Default.GetByteCode(), vss.Default.GetByteCodeSize(), nullptr, &layer.pVShader));
 		D3D11_TEXTURE2D_DESC td = {};
 		td.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 		td.ArraySize = 1;

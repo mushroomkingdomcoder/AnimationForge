@@ -1,11 +1,9 @@
 #include "Engine.h"
-#include "Shaders.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	try
 	{
-		PSS::Load(); VSS::Load();
 		Engine AnimationForge;
 		while (true)
 		{
@@ -30,5 +28,3 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	return -1;
 }
-
-

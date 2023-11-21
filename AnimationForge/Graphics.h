@@ -247,4 +247,9 @@ public:
 	mat4 GetAspectCorrectionMatrix(int layer = 0) const;
 	mat3 GetWorldToPixelMapTransformMatrix(int layer = 0) const;
 	mat3 GetPixelMapToWorldTransformMatrix(int layer = 0) const;
+public:
+	static PSS& pss;
+	static VSS& vss;
 };
+inline PSS& Graphics::pss = PSS::Load();
+inline VSS& Graphics::vss = VSS::Load();

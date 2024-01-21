@@ -15,10 +15,10 @@ Animation4ge::Animation4ge(Window& wnd)
 	gfcText(gfx.GetPixelMap(TextLayer).data(), (vec2i(TextLayerRes)).GetVStruct()),
 	state(State::MainMenu),
 	stateChange(true),
-	mbd({ { false,mouse,state,stateChange },{ false,mouse,state,stateChange },{ false,mouse,state,stateChange },{ false,mouse,state,stateChange } }),
-	pNewAnimationBtn
+	mbd({ { false,mouse,state,stateChange },{ false,mouse,state,stateChange } }),
+	pViewAnimationsBtn
 	(	std::make_unique<UIGFCA>(
-		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - (10 + 100 + 20 + 100), Animation("graphics\\new-anim-btn-1200x100-4x1.bmp", { 300,100 }, { 4,1 }, 4),
+		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - (10 + 100 + 20 + 100), Animation("graphics\\view-anims-btn-1200x100-4x1.bmp", { 300,100 }, { 4,1 }, 4),
 		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
 		{
 			UIGFCA& thisGfc = reinterpret_cast<UIGFCA&>(*thisObj);
@@ -37,7 +37,7 @@ Animation4ge::Animation4ge(Window& wnd)
 				}
 				if (mbd.mouse.LeftIsClicked())
 				{
-					mbd.appState = State::NewAnimation;
+					mbd.appState = State::ViewAnimations;
 					mbd.appStateChange = true;
 				}
 			}
@@ -91,87 +91,10 @@ Animation4ge::Animation4ge(Window& wnd)
 		},
 		reinterpret_cast<char*>(&mbd[1]))
 	),
-	pExportAnimationBtn
-	(	std::make_unique<UIGFCI>(
-		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 + (10), Image("graphics\\export-anim-btn-300x100.bmp"),
-		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
-		{
-			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
-			MenuButtonData& mbd = reinterpret_cast<MenuButtonData&>(*thisGfc.pData);
-			if (iRect({ thisGfc.x,thisGfc.y }, { 300,100 }).ContainsPoint({ mbd.mouse.GetX(),mbd.mouse.GetY() }))
-			{
-				if (!mbd.mouseIsHovering)
-				{
-					mbd.mouseIsHovering = true;
-					thisGfc.graphic.Rotate180();
-					return true;
-				}
-				if (mbd.mouse.LeftIsClicked())
-				{
-					mbd.appState = State::ExportAnimation;
-					mbd.appStateChange = true;
-				}
-			}
-			else
-			{
-				if (mbd.mouseIsHovering)
-				{
-					mbd.mouseIsHovering = false;
-					thisGfc.graphic.Rotate180();
-					return true;
-				}
-			}
-			return false;
-		},
-		reinterpret_cast<char*>(&mbd[2]))
-	),
-	pEditAnimationBtn
-	(	std::make_unique<UIGFCA>(
-		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 + (10 + 100 + 20), Animation("graphics\\edit-anim-btn-1200x100-4x1.bmp", { 300,100 }, { 4,1 }, 4),
-		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
-		{
-			UIGFCA& thisGfc = reinterpret_cast<UIGFCA&>(*thisObj);
-			MenuButtonData& mbd = reinterpret_cast<MenuButtonData&>(*thisGfc.pData);
-			bool update = thisGfc.graphic.PlayAndCheck(time);
-			if (iRect({ thisGfc.x,thisGfc.y }, { 300,100 }).ContainsPoint({ mbd.mouse.GetX(),mbd.mouse.GetY() }))
-			{
-				if (!mbd.mouseIsHovering)
-				{
-					mbd.mouseIsHovering = true;
-					for (Image& frame : thisGfc.graphic.GetFrames())
-					{
-						frame.Rotate180();
-						update = true;
-					}
-				}
-				if (mbd.mouse.LeftIsClicked())
-				{
-					mbd.appState = State::EditAnimation;
-					mbd.appStateChange = true;
-				}
-			}
-			else
-			{
-				if (mbd.mouseIsHovering)
-				{
-					mbd.mouseIsHovering = false;
-					for (Image& frame : thisGfc.graphic.GetFrames())
-					{
-						frame.Rotate180();
-						update = true;
-					}
-				}
-			}
-			return update;
-		}, 
-		reinterpret_cast<char*>(&mbd[3]))
-	),
 	mainMenuInterface(gfx, "charsets\\default.bmp", { 16,6 }, ' ', UILayer)
 {
-	mainMenuInterface.AddInterface(pNewAnimationBtn);
+	mainMenuInterface.AddInterface(pViewAnimationsBtn);
 	mainMenuInterface.AddInterface(pImportAnimationBtn);
-	mainMenuInterface.AddInterface(pExportAnimationBtn);
-	mainMenuInterface.AddInterface(pEditAnimationBtn);
 	gfx.SetBackgroundColor(BackgroundColor);
 	gfx.ManuallyManage(TextLayer);
 	gfx.ManuallyManage(UILayer);
@@ -189,28 +112,14 @@ void Animation4ge::Go()
 			MainMenu();
 			break;
 		}
-		case State::NewAnimation:
+		case State::ViewAnimations:
 		{
-			MessageBox(nullptr, "Sorry, but this feature has not yet been implemented.", "Error", MB_ICONEXCLAMATION | MB_OK);
-			state = State::MainMenu;
-			stateChange = false;
+			ViewAnimations();
 			break;
 		}
 		case State::ImportAnimation:
 		{
 			ImportAnimation();
-			break;
-		}
-		case State::ExportAnimation:
-		{
-			MessageBox(nullptr, "Sorry, but this feature has not yet been implemented.", "Error", MB_ICONEXCLAMATION | MB_OK);
-			state = State::MainMenu;
-			stateChange = false;
-			break;
-		}
-		case State::EditAnimation:
-		{
-			EditAnimation();
 			break;
 		}
 	}
@@ -393,22 +302,8 @@ void Animation4ge::ImportAnimation()
 	}
 }
 
-void Animation4ge::EditAnimation()
+void Animation4ge::ViewAnimations()
 {
-	if (animations.empty())
-	{
-		std::ostringstream oss;
-		oss << "There are no animations to edit. Please import between 1 and " << MaxAnimations << " animations.";
-		MessageBox(nullptr, oss.str().c_str(), "Error", MB_ICONEXCLAMATION | MB_OK);
-		state = State::MainMenu;
-		stateChange = false;
-	}
-	else
-	{
-		if (stateChange)
-		{
-
-		}
-	}
+	state = State::MainMenu;
+	stateChange = true;
 }
-

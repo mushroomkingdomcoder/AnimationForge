@@ -29,7 +29,7 @@ private:
 private:
 	enum class UIs
 	{
-		NewAnimBtn, ImportAnimBtn, ExportAnimBtn, EditAnimBtn
+		ViewAnimBtn, ImportAnimBtn
 	};
 private:
 	Clock clock;
@@ -42,7 +42,7 @@ private:
 	std::vector<Animation> animations;
 	enum class State
 	{
-		MainMenu, NewAnimation, ImportAnimation, ExportAnimation, EditAnimation
+		MainMenu, ViewAnimations, ImportAnimation
 	} state;
 	bool stateChange;
 private:
@@ -57,10 +57,8 @@ private:
 		bool& appStateChange;
 	};
 	std::vector<MenuButtonData> mbd;
-	std::unique_ptr<UserInterface::Object> pNewAnimationBtn;
+	std::unique_ptr<UserInterface::Object> pViewAnimationsBtn;
 	std::unique_ptr<UserInterface::Object> pImportAnimationBtn;
-	std::unique_ptr<UserInterface::Object> pExportAnimationBtn;
-	std::unique_ptr<UserInterface::Object> pEditAnimationBtn;
 	UserInterface mainMenuInterface;
 
 	void ImportAnimation();
@@ -75,10 +73,8 @@ private:
 	iRect imgRect;
 	int2 mousePos;
 
-	void EditAnimation();
+	void ViewAnimations();
 public:
 	Animation4ge(Window& wnd);
 	void Go();
 };
-
-

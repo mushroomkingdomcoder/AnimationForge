@@ -143,6 +143,7 @@ LRESULT Window::WindowMessageProceedure(HWND hWnd, UINT Msg, WPARAM wParam, LPAR
 					if (!newHeight) newHeight = 1;
 					float xScale = float((float)newWidth / (float)width);
 					float yScale = float((float)newHeight / (float)height);
+					stretch *= { xScale,yScale };
 					pGFX->UpdateViewportsAndFrameManager(xScale, yScale);
 					width = newWidth;
 					height = newHeight;
@@ -169,8 +170,8 @@ LRESULT Window::WindowMessageProceedure(HWND hWnd, UINT Msg, WPARAM wParam, LPAR
 Window::Window(int w, int h, std::string _title, std::vector<int2> display_layer_dims, DWORD style)
 	:
 	style(style),
-	width(w),
-	height(h),
+	width(w), widthOG(w),
+	height(h), heightOG(h),
 	title(_title),
 	kbd(),
 	mouse()
@@ -253,6 +254,16 @@ int2 Window::GetWindowDimensions() const
 	return { width,height };
 }
 
+float Window::GetAspectRatio()
+{
+	return (float)width / (float)height;
+}
+
+const vec2& Window::GetStretch() const
+{
+	return stretch;
+}
+
 void Window::SetPseudoFullscreen()
 {
 	assert(!pGFX->isFullscreen());
@@ -270,6 +281,15 @@ void Window::SetPseudoFullscreen()
 	}
 	SetWindowDimensions(mInfo.rcMonitor.right - mInfo.rcMonitor.left, mInfo.rcMonitor.bottom - mInfo.rcMonitor.top);
 	pseudoFullscreen = true;
+	
+}
+
+void Window::ResetWindow()
+{
+	pseudoFullscreen = false;
+	SetWindowDimensions(widthOG, heightOG);
+	SetWindowPosition(0, 0);
+	stretch = { 1.0f,1.0f };
 }
 
 bool Window::isPseudoFullscreen() const

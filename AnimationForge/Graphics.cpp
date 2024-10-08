@@ -520,12 +520,15 @@ void Graphics::DrawCircle(int x, int y, int r, std::function<Color(int, int)> co
 
 void Graphics::SetFullscreen()
 {
+	vec2 old_view = GetViewDimensions_FLOAT();
 	GFXCHECK(pFrameManager->SetFullscreenState(true, nullptr));
+	stretch = GetViewDimensions_FLOAT() / old_view;
 }
 
 void Graphics::ExitFullscreen()
 {
 	GFXCHECK(pFrameManager->SetFullscreenState(false, nullptr));
+	stretch = { 1.0f,1.0f };
 }
 
 bool Graphics::isFullscreen()
@@ -533,6 +536,11 @@ bool Graphics::isFullscreen()
 	BOOL isFullscreen;
 	GFXCHECK(pFrameManager->GetFullscreenState(&isFullscreen, nullptr));
 	return isFullscreen;
+}
+
+const vec2& Graphics::GetStretch() const
+{
+	return stretch;
 }
 
 const int& Graphics::GetWidth(int layer) const

@@ -25,6 +25,7 @@ void UserInterface::EnableInterface(int index)
 {
 	assert(index >= 0 && index < pObjects.size());
 	pObjects[index]->isActive = true;
+	drawFlag = true;
 }
 
 void UserInterface::DisableAll()
@@ -41,6 +42,7 @@ void UserInterface::EnableAll()
 	{
 		pObject->isActive = true;
 	}
+	drawFlag = true;
 }
 
 bool UserInterface::InterfaceIsEnabled(int index) const

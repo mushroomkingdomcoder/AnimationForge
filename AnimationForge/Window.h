@@ -79,7 +79,10 @@ private:
 	HWND hWnd;
 	DWORD style;
 	int width;
+	int widthOG;
 	int height;
+	int heightOG;
+	vec2 stretch = { 1.0f,1.0f };
 	std::string title;
 	std::unique_ptr<Graphics> pGFX = nullptr;
 	bool pseudoFullscreen;
@@ -111,7 +114,10 @@ public:
 	int2 GetWindowPosition() const;
 	void SetWindowDimensions(int width, int height);
 	int2 GetWindowDimensions() const;
+	float GetAspectRatio();
+	const vec2& GetStretch() const;
 	void SetPseudoFullscreen();
+	void ResetWindow();
 	bool isPseudoFullscreen() const;
 	~Window();
 public:

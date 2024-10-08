@@ -15,42 +15,45 @@ Animation4ge::Animation4ge(Window& wnd)
 	gfcText(gfx.GetPixelMap(TextLayer).data(), (vec2i(TextLayerRes)).GetVStruct()),
 	state(State::MainMenu),
 	stateChange(true),
-	mbd({ { false,mouse,state,stateChange },{ false,mouse,state,stateChange } }),
+	brefs( { mouse,state,stateChange,this->wnd } ),
+	mbd({ { brefs,false },{ brefs,false },{ brefs,false } }),
 	pViewAnimationsBtn
 	(	std::make_unique<UIGFCA>(
-		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - (10 + 100 + 20 + 100), Animation("graphics\\view-anims-btn-1200x100-4x1.bmp", { 300,100 }, { 4,1 }, 4),
+		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - 275, Animation("graphics\\view-anims-btn-1200x100-4x1.bmp", { 300,100 }, { 4,1 }, 4),
 		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
 		{
 			UIGFCA& thisGfc = reinterpret_cast<UIGFCA&>(*thisObj);
-			MenuButtonData& mbd = reinterpret_cast<MenuButtonData&>(*thisGfc.pData);
+			UIButtonData& mbd = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
 			bool update = thisGfc.graphic.PlayAndCheck(time);
-			if (iRect({ thisGfc.x,thisGfc.y }, { 300,100 }).ContainsPoint({ mbd.mouse.GetX(),mbd.mouse.GetY() }))
+			if (fRect(
+					vec2((float)thisGfc.x, (float)thisGfc.y) * mbd.refs.wnd.GetStretch(), 
+					(vec2)thisGfc.GetGraphic().GetFrameSize() * mbd.refs.wnd.GetStretch()).ContainsPoint(vec2(mbd.refs.mouse.GetX(), mbd.refs.mouse.GetY())))
 			{
-				if (!mbd.mouseIsHovering)
+				if (!mbd.hovering)
 				{
-					mbd.mouseIsHovering = true;
+					mbd.hovering = true;
 					for (Image& frame : thisGfc.graphic.GetFrames())
 					{
 						frame.Rotate180();
-						update = true;
 					}
+					update = true;
 				}
-				if (mbd.mouse.LeftIsClicked())
+				if (mbd.refs.mouse.LeftIsClicked())
 				{
-					mbd.appState = State::ViewAnimations;
-					mbd.appStateChange = true;
+					mbd.refs.appState = State::ViewAnimations;
+					mbd.refs.appStateChange = true;
 				}
 			}
 			else
 			{
-				if (mbd.mouseIsHovering)
+				if (mbd.hovering)
 				{
-					mbd.mouseIsHovering = false;
+					mbd.hovering = false;
 					for (Image& frame : thisGfc.graphic.GetFrames())
 					{
 						frame.Rotate180();
-						update = true;
 					}
+					update = true;
 				}
 			}
 			return update;
@@ -59,30 +62,31 @@ Animation4ge::Animation4ge(Window& wnd)
 	),
 	pImportAnimationBtn
 	(	std::make_unique<UIGFCI>(
-		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - (10 + 100), Image("graphics\\import-anim-btn-300x100.bmp"),
+		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - 150, Image("graphics\\import-anim-btn-300x100.bmp"),
 		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
 		{
 			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
-			MenuButtonData& mbd = reinterpret_cast<MenuButtonData&>(*thisGfc.pData);
-			if (iRect({ thisGfc.x,thisGfc.y }, { 300,100 }).ContainsPoint({ mbd.mouse.GetX(),mbd.mouse.GetY() }))
+			UIButtonData& mbd = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			if ((fRect(thisGfc.GetGraphic().GetRect(
+					thisGfc.x * mbd.refs.wnd.GetStretch().x, thisGfc.y * mbd.refs.wnd.GetStretch().y)) * mbd.refs.wnd.GetStretch()).ContainsPoint(vec2(mbd.refs.mouse.GetX(), mbd.refs.mouse.GetY())))
 			{
-				if (!mbd.mouseIsHovering)
+				if (!mbd.hovering)
 				{
-					mbd.mouseIsHovering = true;
+					mbd.hovering = true;
 					thisGfc.graphic.Rotate180();
 					return true;
 				}
-				if (mbd.mouse.LeftIsClicked())
+				if (mbd.refs.mouse.LeftIsClicked())
 				{
-					mbd.appState = State::ImportAnimation;
-					mbd.appStateChange = true;
+					mbd.refs.appState = State::ImportAnimation;
+					mbd.refs.appStateChange = true;
 				}
 			}
 			else
 			{
-				if (mbd.mouseIsHovering)
+				if (mbd.hovering)
 				{
-					mbd.mouseIsHovering = false;
+					mbd.hovering = false;
 					thisGfc.graphic.Rotate180();
 					return true;
 				}
@@ -91,10 +95,53 @@ Animation4ge::Animation4ge(Window& wnd)
 		},
 		reinterpret_cast<char*>(&mbd[1]))
 	),
+	pBackButton
+	(	std::make_unique<UIGFCA>(
+		0, 0, Animation("graphics\\back-btn-600x50-4x1.bmp", { 150,50 }, { 4,1 }, 4),
+		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
+		{
+			UIGFCA& thisGfc = reinterpret_cast<UIGFCA&>(*thisObj);
+			UIButtonData& mbd = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			bool update = thisGfc.graphic.PlayAndCheck(time);
+			if (mbd.refs.mouse.GetX() < thisGfc.GetGraphic().GetFrameWidth() * mbd.refs.wnd.GetStretch().x
+				&& mbd.refs.mouse.GetY() < thisGfc.GetGraphic().GetFrameHeight() * mbd.refs.wnd.GetStretch().y)
+			{
+				if (!mbd.hovering)
+				{
+					mbd.hovering = true;
+					for (Image& frame : thisGfc.graphic.GetFrames())
+					{
+						frame.InvertColors();
+					}
+					update = true;
+				}
+				if (mbd.refs.mouse.LeftIsClicked() && mbd.refs.mouse.GetX() >= 0 && mbd.refs.mouse.GetY() >= 0)
+				{
+					mbd.refs.appState = State::MainMenu;
+					mbd.refs.appStateChange = true;
+				}
+			}
+			else
+			{
+				if (mbd.hovering)
+				{
+					mbd.hovering = false;
+					for (Image& frame : thisGfc.graphic.GetFrames())
+					{
+						frame.InvertColors();
+					}
+					update = true;
+				}
+			}
+			return update;
+		},
+		reinterpret_cast<char*>(&mbd[2]))
+	),
 	mainMenuInterface(gfx, "charsets\\default.bmp", { 16,6 }, ' ', UILayer)
 {
 	mainMenuInterface.AddInterface(pViewAnimationsBtn);
 	mainMenuInterface.AddInterface(pImportAnimationBtn);
+	mainMenuInterface.AddInterface(pBackButton);
 	gfx.SetBackgroundColor(BackgroundColor);
 	gfx.ManuallyManage(TextLayer);
 	gfx.ManuallyManage(UILayer);
@@ -105,6 +152,22 @@ Animation4ge::Animation4ge(Window& wnd)
 
 void Animation4ge::Go()
 {
+	if (kbd.isActive())
+	{
+		auto event = kbd.Read();
+		if (event.isKeyUp() && event.GetKeycode() == 'F')
+		{
+			if (wnd.isPseudoFullscreen())
+			{
+				wnd.ResetWindow();
+			}
+			else
+			{
+				wnd.SetPseudoFullscreen();
+			}
+		}
+	}
+
 	switch (state)
 	{
 		case State::MainMenu:
@@ -138,8 +201,10 @@ void Animation4ge::MainMenu()
 	if (stateChange)
 	{
 		ResetDisplay();
-		mainMenuInterface.EnableAll();
-		Image("graphics\\banner-800x100.bmp").Draw(gfx, 0, 0, UILayer);
+		mainMenuInterface.DisableAll();
+		mainMenuInterface.EnableInterface((int)UIs::ViewAnimBtn);
+		mainMenuInterface.EnableInterface((int)UIs::ImportAnimBtn);
+		Image("graphics\\banner-800x100.bmp").Draw(gfx, UILayerRes.x / 2 - 400, 0, UILayer);
 		stateChange = false;
 	}
 	float time = clock.Mark();
@@ -173,11 +238,11 @@ void Animation4ge::ImportAnimation()
 
 				std::ostringstream oss;
 				oss << "Please indicate the width & height of each frame.\n\n"
-					<< MaxAnimationFrameDim << " x " << MaxAnimationFrameDim << " frame dimension maximum.\n"
+					<< MaxAnimationFrameDim.x << " x " << MaxAnimationFrameDim.y << " frame dimension maximum.\n"
 					<< MaxFramesPerAnimation << " frame count maximum.";
 				MessageBox(nullptr, oss.str().c_str(), "Success", MB_ICONINFORMATION | MB_OK);
-				gfcText.Write("DoubleCl!ck -> Submit Dimensions, SPACE -> skip\r");
-				gfcText.Write("Imported Animation X of X:");
+				gfcText.Write("                 DoubleCl!ck -> Submit Dimensions, SPACE -> skip\r");
+				gfcText.Write("                          Imported Animation X of X:");
 				animImportIndex = 0;
 				newAnim = true;
 				skipAnim = false;
@@ -197,15 +262,15 @@ void Animation4ge::ImportAnimation()
 			gfx.Erase(BackgroundLayer);
 			curImportImg = Image(files[animImportIndex].c_str());
 			bool animTooLarge = false;
-			if (curImportImg.GetWidth() < MaxAnimationFrameDim && curImportImg.GetHeight() / MaxAnimationFrameDim > MaxFramesPerAnimation)
+			if (curImportImg.GetWidth() < MaxAnimationFrameDim.x && curImportImg.GetHeight() / MaxAnimationFrameDim.y > MaxFramesPerAnimation)
 			{
 				animTooLarge = true;
 			}
-			else if (curImportImg.GetHeight() < MaxAnimationFrameDim && curImportImg.GetWidth() / MaxAnimationFrameDim > MaxFramesPerAnimation)
+			else if (curImportImg.GetHeight() < MaxAnimationFrameDim.y && curImportImg.GetWidth() / MaxAnimationFrameDim.x > MaxFramesPerAnimation)
 			{
 				animTooLarge = true;
 			}
-			else if ((curImportImg.GetWidth() / MaxAnimationFrameDim) * (curImportImg.GetHeight() / MaxAnimationFrameDim) > MaxFramesPerAnimation)
+			else if ((curImportImg.GetWidth() / MaxAnimationFrameDim.x) * (curImportImg.GetHeight() / MaxAnimationFrameDim.y) > MaxFramesPerAnimation)
 			{
 				animTooLarge = true;
 			}
@@ -218,15 +283,15 @@ void Animation4ge::ImportAnimation()
 			}
 			else
 			{
-				if (curImportImg.GetWidth() > MaxAnimationFrameDim)
+				if (curImportImg.GetWidth() > MaxAnimationFrameDim.x)
 				{
-					curImportImg.Crop(MaxAnimationFrameDim, curImportImg.GetHeight(), 0, 0);
+					curImportImg.Crop(MaxAnimationFrameDim.x, curImportImg.GetHeight(), 0, 0);
 				}
-				if (curImportImg.GetHeight() > MaxAnimationFrameDim)
+				if (curImportImg.GetHeight() > MaxAnimationFrameDim.y)
 				{
-					curImportImg.Crop(curImportImg.GetWidth(), MaxAnimationFrameDim, 0, 0);
+					curImportImg.Crop(curImportImg.GetWidth(), MaxAnimationFrameDim.y, 0, 0);
 				}
-				curImportImg.AdjustSize((float)FrameZoom, (float)FrameZoom);
+				curImportImg.AdjustSize((float)FrameZoom.x, (float)FrameZoom.y);
 				imgPos = { (WindowWidth - curImportImg.GetWidth()) / 2,(WindowHeight - curImportImg.GetHeight()) / 2 + 16 };
 				curImportImg.Draw(gfx, imgPos.x, imgPos.y, BackgroundLayer);
 
@@ -234,7 +299,7 @@ void Animation4ge::ImportAnimation()
 				mousePos = { curImportImg.GetWidth(),curImportImg.GetHeight() };
 				imgRect = sizeSelector;
 
-				gfcText.SetCursorPosition({ 19,1 });
+				gfcText.SetCursorPosition({ 45,1 });
 				std::ostringstream oss;
 				oss << (animImportIndex + 1) << " of " << files.size() << ":   ";
 				gfcText.Write(oss.str());
@@ -245,26 +310,35 @@ void Animation4ge::ImportAnimation()
 		if (!skipAnim)
 		{
 			gfcText.SetCursorPosition({ 0,2 });
-			gfcText.SetTextColor(Colors::BrightRed);
+			gfcText.SetTextColor(Colors::LightCyan);
 			std::ostringstream oss;
-			oss << "( " << (mousePos.x / FrameZoom) << " , " << (mousePos.y / FrameZoom) << " )   ";
+			oss << "( " << (mousePos.x / FrameZoom.x) << " , " << (mousePos.y / FrameZoom.y) << " )   ";
 			gfcText.Write(oss.str());
 			gfcText.SetTextColor(Colors::White);
 
-			if (imgRect.ContainsPoint({ mouse.GetX(),mouse.GetY() }))
+			if (!imgRect.ContainsPoint({ int(float(mouse.GetX()) / wnd.GetStretch().x),imgRect.GetPosition().y}))
 			{
-				mousePos = { mouse.GetX() - imgPos.x + FrameZoom,mouse.GetY() - imgPos.y + FrameZoom };
+				mousePos.x = curImportImg.GetWidth();
 			}
 			else
 			{
-				mousePos = { curImportImg.GetWidth(),curImportImg.GetHeight() };
+				mousePos.x = int(float(mouse.GetX()) / wnd.GetStretch().x) - imgPos.x + FrameZoom.x;
 			}
+			if (!imgRect.ContainsPoint({ imgRect.GetPosition().x,int(float(mouse.GetY()) / wnd.GetStretch().y) }))
+			{
+				mousePos.y = curImportImg.GetHeight();
+			}
+			else
+			{
+				mousePos.y = int(float(mouse.GetY()) / wnd.GetStretch().y) - imgPos.y + FrameZoom.y;
+			}
+
 			while (mouse.isActive())
 			{
 				const Mouse::Event me = mouse.Read();
 				if (me.isLeftDoubleClick())
 				{
-					frameDim = { mousePos.x / FrameZoom,mousePos.y / FrameZoom };
+					frameDim = { mousePos.x / FrameZoom.x,mousePos.y / FrameZoom.y };
 					Image spriteSheet = Image(files[animImportIndex].c_str());
 					int2 sheetDim = { spriteSheet.GetWidth() / frameDim.x,spriteSheet.GetHeight() / frameDim.y };
 					if (sheetDim.x * sheetDim.y <= MaxFramesPerAnimation)
@@ -304,6 +378,28 @@ void Animation4ge::ImportAnimation()
 
 void Animation4ge::ViewAnimations()
 {
-	state = State::MainMenu;
-	stateChange = true;
+	if (animations.empty())
+	{
+		MessageBox(nullptr, "There are currently no animations to view :(\nImport a couple first to get started!", "Error", MB_ICONEXCLAMATION | MB_OK);
+		state = State::MainMenu;
+		stateChange = false;
+		return;
+	}
+	if (stateChange)
+	{
+		ResetDisplay();
+		mainMenuInterface.DisableAll();
+		mainMenuInterface.EnableInterface((int)UIs::BackBtn);
+
+		
+
+		stateChange = false;
+	}
+	float time = clock.Mark();
+	mainMenuInterface.Update(time);
+	mainMenuInterface.Draw();
+	animations[nAnimation].Play(time);
+	int drawX = (MainLayerRes.x / 2) - (animations[nAnimation].GetFrameWidth() / 2);
+	int drawY = (MainLayerRes.y / 2) - (animations[nAnimation].GetFrameHeight() / 2);
+	animations[nAnimation].Draw(gfx, drawX, drawY, MainLayer);
 }

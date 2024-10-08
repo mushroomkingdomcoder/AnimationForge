@@ -133,6 +133,7 @@ private:
 	mutable D3D11_MAPPED_SUBRESOURCE msr = {};
 	std::vector<Layer> Layers;
 	float4 fBackgroundColorRGBA = { 0.0f,0.0f,0.0f,1.0f };
+	vec2 stretch = { 1.0f,1.0f };
 private:
 	void UpdateViewportsAndFrameManager(float win_x_scale, float win_y_scale);
 public:
@@ -205,6 +206,7 @@ public:
 	void SetFullscreen();
 	void ExitFullscreen();
 	bool isFullscreen();
+	const vec2& GetStretch() const;
 	const int& GetWidth(int layer = 0) const;
 	const int& GetHeight(int layer = 0) const;
 	int GetViewWidth(int layer = 0) const;

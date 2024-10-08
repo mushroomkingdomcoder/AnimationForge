@@ -28,3 +28,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 	return -1;
 }
+
+int main()
+{
+	return 0;
+}

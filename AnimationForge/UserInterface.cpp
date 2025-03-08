@@ -1,6 +1,6 @@
 #include "UserInterface.h"
 
-UserInterface::UserInterface(Graphics& gfx, std::string text_font, char2 char_table_dim, int start_char, int layer)
+UserInterface::UserInterface(Graphics& gfx, std::wstring text_font, char2 char_table_dim, int start_char, int layer)
 	:
 	gfx(gfx),
 	layer(layer),
@@ -9,23 +9,32 @@ UserInterface::UserInterface(Graphics& gfx, std::string text_font, char2 char_ta
 	drawFlag(true)
 {}
 
-void UserInterface::AddInterface(std::unique_ptr<Object>& pInterface)
+void UserInterface::AddInterfaces(std::vector<std::unique_ptr<Object>*> ppInterfaces)
 {
-	assert(pInterface != nullptr);
-	pObjects.emplace_back(std::move(pInterface));
+	for (auto& ppInterface : ppInterfaces)
+	{
+		assert(ppInterface); assert(*ppInterface);
+		pObjects.emplace_back(std::move(*ppInterface));
+	}
 }
 
-void UserInterface::DisableInterface(int index)
+void UserInterface::DisableInterfaces(std::vector<int> indicies)
 {
-	assert(index >= 0 && index < pObjects.size());
-	pObjects[index]->isActive = false;
+	for (int& index : indicies)
+	{
+		assert(index >= 0 && index < pObjects.size());
+		pObjects[index]->isActive = false;
+	}
 }
 
-void UserInterface::EnableInterface(int index)
+void UserInterface::EnableInterfaces(std::vector<int> indicies)
 {
-	assert(index >= 0 && index < pObjects.size());
-	pObjects[index]->isActive = true;
-	drawFlag = true;
+	for (int& index : indicies)
+	{
+		assert(index >= 0 && index < pObjects.size());
+		pObjects[index]->isActive = true;
+		drawFlag = true;
+	}
 }
 
 void UserInterface::DisableAll()
@@ -53,10 +62,13 @@ bool UserInterface::InterfaceIsEnabled(int index) const
 
 void UserInterface::Update(float time_ellapsed)
 {
+	int id = 0;
 	for (auto& pObject : pObjects)
 	{
 		if (pObject->update && pObject->isActive)
 		{
+			pObject->id = id;
+			++id;
 			if (pObject->update(pObject, time_ellapsed))
 			{
 				drawFlag = true;

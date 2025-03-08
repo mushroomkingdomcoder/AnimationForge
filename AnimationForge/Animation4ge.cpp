@@ -15,40 +15,40 @@ Animation4ge::Animation4ge(Window& wnd)
 	gfcText(gfx.GetPixelMap(TextLayer).data(), (vec2i(TextLayerRes)).GetVStruct()),
 	state(State::MainMenu),
 	stateChange(true),
-	brefs( { mouse,state,stateChange,this->wnd } ),
-	mbd({ { brefs,false },{ brefs,false },{ brefs,false } }),
+	bdata({ { mouse,state,stateChange,this->wnd,paused,zoomed,nAnimation,&pCurAnimation,animations },{} }),
 	pViewAnimationsBtn
 	(	std::make_unique<UIGFCA>(
-		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - 275, Animation("graphics\\view-anims-btn-1200x100-4x1.bmp", { 300,100 }, { 4,1 }, 4),
+		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - 275, Animation(L"graphics\\view-anims-btn-1200x100-4x1.bmp", { 300,100 }, { 4,1 }, 4),
 		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
 		{
 			UIGFCA& thisGfc = reinterpret_cast<UIGFCA&>(*thisObj);
-			UIButtonData& mbd = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::ViewAnimBtn;
 			bool update = thisGfc.graphic.PlayAndCheck(time);
 			if (fRect(
-					vec2((float)thisGfc.x, (float)thisGfc.y) * mbd.refs.wnd.GetStretch(), 
-					(vec2)thisGfc.GetGraphic().GetFrameSize() * mbd.refs.wnd.GetStretch()).ContainsPoint(vec2(mbd.refs.mouse.GetX(), mbd.refs.mouse.GetY())))
+					vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(), 
+					(vec2)thisGfc.GetGraphic().GetFrameSize() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
 			{
-				if (!mbd.hovering)
+				if (!bdata.hovering[id])
 				{
-					mbd.hovering = true;
+					bdata.hovering[id] = true;
 					for (Image& frame : thisGfc.graphic.GetFrames())
 					{
 						frame.Rotate180();
 					}
 					update = true;
 				}
-				if (mbd.refs.mouse.LeftIsClicked())
+				if (bdata.refs.mouse.LeftIsClicked())
 				{
-					mbd.refs.appState = State::ViewAnimations;
-					mbd.refs.appStateChange = true;
+					bdata.refs.appState = State::ViewAnimations;
+					bdata.refs.appStateChange = true;
 				}
 			}
 			else
 			{
-				if (mbd.hovering)
+				if (bdata.hovering[id])
 				{
-					mbd.hovering = false;
+					bdata.hovering[id] = false;
 					for (Image& frame : thisGfc.graphic.GetFrames())
 					{
 						frame.Rotate180();
@@ -58,74 +58,77 @@ Animation4ge::Animation4ge(Window& wnd)
 			}
 			return update;
 		}, 
-		reinterpret_cast<char*>(&mbd[0]))
+		reinterpret_cast<char*>(&bdata))
 	),
 	pImportAnimationBtn
 	(	std::make_unique<UIGFCI>(
-		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - 150, Image("graphics\\import-anim-btn-300x100.bmp"),
+		UILayerRes.x / 2 - 150, (UILayerRes.y + 100) / 2 - 150, Image(L"graphics\\import-anim-btn-300x100.bmp"),
 		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
 		{
 			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
-			UIButtonData& mbd = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
-			if ((fRect(thisGfc.GetGraphic().GetRect(
-					thisGfc.x * mbd.refs.wnd.GetStretch().x, thisGfc.y * mbd.refs.wnd.GetStretch().y)) * mbd.refs.wnd.GetStretch()).ContainsPoint(vec2(mbd.refs.mouse.GetX(), mbd.refs.mouse.GetY())))
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::ImportAnimBtn;
+			if (fRect(
+				vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(),
+				(vec2)thisGfc.GetGraphic().GetDimensions() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
 			{
-				if (!mbd.hovering)
+				if (!bdata.hovering[id])
 				{
-					mbd.hovering = true;
+					bdata.hovering[id] = true;
 					thisGfc.graphic.Rotate180();
 					return true;
 				}
-				if (mbd.refs.mouse.LeftIsClicked())
+				if (bdata.refs.mouse.LeftIsClicked())
 				{
-					mbd.refs.appState = State::ImportAnimation;
-					mbd.refs.appStateChange = true;
+					bdata.refs.appState = State::ImportAnimation;
+					bdata.refs.appStateChange = true;
 				}
 			}
 			else
 			{
-				if (mbd.hovering)
+				if (bdata.hovering[id])
 				{
-					mbd.hovering = false;
+					bdata.hovering[id] = false;
 					thisGfc.graphic.Rotate180();
 					return true;
 				}
 			}
 			return false;
 		},
-		reinterpret_cast<char*>(&mbd[1]))
+		reinterpret_cast<char*>(&bdata))
 	),
 	pBackButton
 	(	std::make_unique<UIGFCA>(
-		0, 0, Animation("graphics\\back-btn-600x50-4x1.bmp", { 150,50 }, { 4,1 }, 4),
+		0, 0, Animation(L"graphics\\back-btn-600x50-4x1.bmp", { 150,50 }, { 4,1 }, 4),
 		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
 		{
 			UIGFCA& thisGfc = reinterpret_cast<UIGFCA&>(*thisObj);
-			UIButtonData& mbd = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::BackBtn;
 			bool update = thisGfc.graphic.PlayAndCheck(time);
-			if (mbd.refs.mouse.GetX() < thisGfc.GetGraphic().GetFrameWidth() * mbd.refs.wnd.GetStretch().x
-				&& mbd.refs.mouse.GetY() < thisGfc.GetGraphic().GetFrameHeight() * mbd.refs.wnd.GetStretch().y)
+			if (bdata.refs.mouse.GetX() < thisGfc.GetGraphic().GetFrameWidth() * bdata.refs.wnd.GetStretch().x
+				&& bdata.refs.mouse.GetY() < thisGfc.GetGraphic().GetFrameHeight() * bdata.refs.wnd.GetStretch().y)
 			{
-				if (!mbd.hovering)
+				if (!bdata.hovering[id])
 				{
-					mbd.hovering = true;
+					bdata.hovering[id] = true;
 					for (Image& frame : thisGfc.graphic.GetFrames())
 					{
 						frame.InvertColors();
 					}
 					update = true;
 				}
-				if (mbd.refs.mouse.LeftIsClicked() && mbd.refs.mouse.GetX() >= 0 && mbd.refs.mouse.GetY() >= 0)
+				if (bdata.refs.mouse.LeftIsClicked() && bdata.refs.mouse.GetX() >= 0 && bdata.refs.mouse.GetY() >= 0)
 				{
-					mbd.refs.appState = State::MainMenu;
-					mbd.refs.appStateChange = true;
+					bdata.refs.appState = State::MainMenu;
+					bdata.refs.appStateChange = true;
 				}
 			}
 			else
 			{
-				if (mbd.hovering)
+				if (bdata.hovering[id])
 				{
-					mbd.hovering = false;
+					bdata.hovering[id] = false;
 					for (Image& frame : thisGfc.graphic.GetFrames())
 					{
 						frame.InvertColors();
@@ -135,13 +138,280 @@ Animation4ge::Animation4ge(Window& wnd)
 			}
 			return update;
 		},
-		reinterpret_cast<char*>(&mbd[2]))
+		reinterpret_cast<char*>(&bdata))
 	),
-	mainMenuInterface(gfx, "charsets\\default.bmp", { 16,6 }, ' ', UILayer)
+	pPlayPause
+	(	std::make_unique<UIGFCI>(
+		UILayerRes.x / 2 - 25, 0, Image(L"graphics\\pause-50x50.bmp"),
+		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
+		{
+			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::PlayPause;
+			if (fRect(
+				vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(),
+				(vec2)thisGfc.GetGraphic().GetDimensions() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
+			{
+				if (!bdata.hovering[id])
+				{
+					bdata.hovering[id] = true;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+				while (bdata.refs.mouse.isActive())
+				{
+					if (bdata.refs.mouse.Read().isLeftClick())
+					{
+						if (bdata.refs.paused)
+						{
+							bdata.refs.paused = false;
+							thisGfc.graphic.Load(L"graphics\\pause-50x50.bmp").InvertColors();
+						}
+						else
+						{
+							bdata.refs.paused = true;
+							thisGfc.graphic.Load(L"graphics\\play-50x50.bmp").InvertColors();
+						}
+						return true;
+					}
+				}
+			}
+			else
+			{
+				if (bdata.hovering[id])
+				{
+					bdata.hovering[id] = false;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+			}
+			return false;
+		},
+		reinterpret_cast<char*>(&bdata))
+	),
+	pSlow
+	(	std::make_unique<UIGFCI>(
+		UILayerRes.x / 2 - 100, 0, Image(L"graphics\\slow-50x50.bmp"),
+		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
+		{
+			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::Slow;
+			float curFPS = (*bdata.refs.ppCurAnimation)->GetFPS();
+			bool minFPS = curFPS < MinFPS;
+			if (fRect(
+				vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(),
+				(vec2)thisGfc.GetGraphic().GetDimensions() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
+			{
+				if (!bdata.hovering[id])
+				{
+					if (minFPS) return false;
+					bdata.hovering[id] = true;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+				while (bdata.refs.mouse.isActive())
+				{
+					if (bdata.refs.mouse.Read().isLeftClick())
+					{
+						if (minFPS) return false;
+						(*bdata.refs.ppCurAnimation)->SetFPS(curFPS / StepFPS);
+					}
+				}
+			}
+			else
+			{
+				if (bdata.hovering[id])
+				{
+					bdata.hovering[id] = false;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+			}
+			return false;
+		},
+		reinterpret_cast<char*>(&bdata))
+	),
+	pFast
+	(	std::make_unique<UIGFCI>(
+		UILayerRes.x / 2 + 50, 0, Image(L"graphics\\fast-50x50.bmp"),
+		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
+		{
+			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::Fast;
+			float curFPS = (*bdata.refs.ppCurAnimation)->GetFPS();
+			bool maxFPS = curFPS > MaxFPS;
+			if (fRect(
+				vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(),
+				(vec2)thisGfc.GetGraphic().GetDimensions() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
+			{
+				if (!bdata.hovering[id])
+				{
+					if (maxFPS) return false;
+					bdata.hovering[id] = true;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+				while (bdata.refs.mouse.isActive())
+				{
+					if (bdata.refs.mouse.Read().isLeftClick())
+					{
+						if (maxFPS) return false;
+						(*bdata.refs.ppCurAnimation)->SetFPS(curFPS * StepFPS);
+					}
+				}
+			}
+			else
+			{
+				if (bdata.hovering[id])
+				{
+					bdata.hovering[id] = false;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+			}
+			return false;
+		},
+		reinterpret_cast<char*>(&bdata))
+	),
+	pPrev
+	(	std::make_unique<UIGFCI>(
+		0, UILayerRes.y / 2 - 25, Image(L"graphics\\prev-50x50.bmp"),
+		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
+		{
+			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::Prev;
+			bool firstAnim = bdata.refs.nAnimation == 0;
+			if (fRect(
+				vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(),
+				(vec2)thisGfc.GetGraphic().GetDimensions() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
+			{
+				if (!bdata.hovering[id])
+				{
+					if (firstAnim) return false;
+					bdata.hovering[id] = true;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+				while (bdata.refs.mouse.isActive())
+				{
+					if (bdata.refs.mouse.Read().isLeftClick())
+					{
+						if (firstAnim) return false;
+						--bdata.refs.nAnimation;
+					}
+				}
+			}
+			else
+			{
+				if (bdata.hovering[id])
+				{
+					bdata.hovering[id] = false;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+			}
+			return false;
+		},
+		reinterpret_cast<char*>(&bdata))
+	),
+	pNext
+	(	std::make_unique<UIGFCI>(
+		UILayerRes.x - 50, UILayerRes.y / 2 - 25, Image(L"graphics\\next-50x50.bmp"),
+		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
+		{
+			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::Next;
+			bool lastAnim = bdata.refs.nAnimation == bdata.refs.animations.size() - 1;
+			if (fRect(
+				vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(),
+				(vec2)thisGfc.GetGraphic().GetDimensions() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
+			{
+				if (!bdata.hovering[id])
+				{
+					if (lastAnim) return false;
+					bdata.hovering[id] = true;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+				while (bdata.refs.mouse.isActive())
+				{
+					if (bdata.refs.mouse.Read().isLeftClick())
+					{
+						if (lastAnim) return false;
+						++bdata.refs.nAnimation;
+					}
+				}
+			}
+			else
+			{
+				if (bdata.hovering[id])
+				{
+					bdata.hovering[id] = false;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+			}
+			return false;
+		},
+		reinterpret_cast<char*>(&bdata))
+	),
+	pZoom
+	(	std::make_unique<UIGFCI>(
+		UILayerRes.x - 50, 0, Image(L"graphics\\zoomout-50x50.bmp"),
+		[](std::unique_ptr<UI::Object>& thisObj, float time) -> bool
+		{
+			UIGFCI& thisGfc = reinterpret_cast<UIGFCI&>(*thisObj);
+			UIButtonData& bdata = reinterpret_cast<UIButtonData&>(*thisGfc.pData);
+			const int id = (int)UIs::Zoom;
+			if (fRect(
+				vec2((float)thisGfc.x, (float)thisGfc.y) * bdata.refs.wnd.GetStretch(),
+				(vec2)thisGfc.GetGraphic().GetDimensions() * bdata.refs.wnd.GetStretch()).ContainsPoint(vec2((float)bdata.refs.mouse.GetX(), (float)bdata.refs.mouse.GetY())))
+			{
+				if (!bdata.hovering[id])
+				{
+					bdata.hovering[id] = true;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+				while (bdata.refs.mouse.isActive())
+				{
+					if (bdata.refs.mouse.Read().isLeftClick())
+					{
+						if (bdata.refs.zoomed)
+						{
+							bdata.refs.zoomed = false;
+							thisGfc.graphic.Load(L"graphics\\zoomin-50x50.bmp").InvertColors();
+							
+						}
+						else
+						{
+							bdata.refs.zoomed = true;
+							thisGfc.graphic.Load(L"graphics\\zoomout-50x50.bmp").InvertColors();
+						}
+						return true;
+					}
+				}
+			}
+			else
+			{
+				if (bdata.hovering[id])
+				{
+					bdata.hovering[id] = false;
+					thisGfc.graphic.InvertColors();
+					return true;
+				}
+			}
+			return false;
+		},
+		reinterpret_cast<char*>(&bdata))
+	),
+	mainMenuInterface(gfx, L"charsets\\default.bmp", { 16,6 }, ' ', UILayer)
 {
-	mainMenuInterface.AddInterface(pViewAnimationsBtn);
-	mainMenuInterface.AddInterface(pImportAnimationBtn);
-	mainMenuInterface.AddInterface(pBackButton);
+	mainMenuInterface.AddInterfaces( { &pViewAnimationsBtn,&pImportAnimationBtn,&pBackButton,&pPlayPause,&pSlow,&pFast,&pPrev,&pNext,&pZoom });
 	gfx.SetBackgroundColor(BackgroundColor);
 	gfx.ManuallyManage(TextLayer);
 	gfx.ManuallyManage(UILayer);
@@ -202,9 +472,8 @@ void Animation4ge::MainMenu()
 	{
 		ResetDisplay();
 		mainMenuInterface.DisableAll();
-		mainMenuInterface.EnableInterface((int)UIs::ViewAnimBtn);
-		mainMenuInterface.EnableInterface((int)UIs::ImportAnimBtn);
-		Image("graphics\\banner-800x100.bmp").Draw(gfx, UILayerRes.x / 2 - 400, 0, UILayer);
+		mainMenuInterface.EnableInterfaces({ (int)UIs::ViewAnimBtn,(int)UIs::ImportAnimBtn });
+		Image(L"graphics\\banner-800x100.bmp").Draw(gfx, UILayerRes.x / 2 - 400, 0, UILayer);
 		stateChange = false;
 	}
 	float time = clock.Mark();
@@ -217,7 +486,7 @@ void Animation4ge::ImportAnimation()
 	if (stateChange)
 	{
 		ResetDisplay();
-		std::vector<std::wstring> wfiles = FileDialog::OpenFiles({ { L"Animations (.bmp)",L"*.bmp" } }, true, L"Choose an Animation Forge Animation File (.bmp)", L"Animate", L"Animation:");
+		wfiles = FileDialog::OpenFiles({ { L"Animations (.bmp)",L"*.bmp" } }, true, L"Choose an Animation Forge Animation File (.bmp)", L"Animate", L"Animation:");
 		if (!wfiles.empty())
 		{
 			if (wfiles.size() + animations.size() > MaxAnimations)
@@ -229,19 +498,12 @@ void Animation4ge::ImportAnimation()
 			}
 			else
 			{
-				files.clear();
-				files.resize(wfiles.size());
-				for (int i = 0; i < wfiles.size(); ++i)
-				{
-					files[i] = FileDialog::ConvertWString(wfiles[i]);
-				}
-
 				std::ostringstream oss;
 				oss << "Please indicate the width & height of each frame.\n\n"
 					<< MaxAnimationFrameDim.x << " x " << MaxAnimationFrameDim.y << " frame dimension maximum.\n"
 					<< MaxFramesPerAnimation << " frame count maximum.";
 				MessageBox(nullptr, oss.str().c_str(), "Success", MB_ICONINFORMATION | MB_OK);
-				gfcText.Write("                 DoubleCl!ck -> Submit Dimensions, SPACE -> skip\r");
+				gfcText.Write("                 DoubleClick -> Submit Dimensions, SPACE -> skip\r");
 				gfcText.Write("                          Imported Animation X of X:");
 				animImportIndex = 0;
 				newAnim = true;
@@ -255,12 +517,12 @@ void Animation4ge::ImportAnimation()
 			MessageBox(nullptr, "No .bmp image files chosen!", "Error", MB_ICONEXCLAMATION | MB_OK);
 		}
 	}
-	if (animImportIndex < files.size())
+	if (animImportIndex < wfiles.size())
 	{
 		if (newAnim)
 		{
 			gfx.Erase(BackgroundLayer);
-			curImportImg = Image(files[animImportIndex].c_str());
+			curImportImg = Image(wfiles[animImportIndex].c_str());
 			bool animTooLarge = false;
 			if (curImportImg.GetWidth() < MaxAnimationFrameDim.x && curImportImg.GetHeight() / MaxAnimationFrameDim.y > MaxFramesPerAnimation)
 			{
@@ -276,9 +538,9 @@ void Animation4ge::ImportAnimation()
 			}
 			if (animTooLarge)
 			{
-				std::ostringstream oss;
-				oss << "Animation \"" << files[animImportIndex] << "\" is too large to import and will be ignored. Please specify the frame dimensions of the next animation file.";
-				MessageBox(nullptr, oss.str().c_str(), "Error", MB_ICONEXCLAMATION | MB_OK);
+				std::wostringstream oss;
+				oss << "Animation \"" << wfiles[animImportIndex] << "\" is too large to import and will be ignored. Please specify the frame dimensions of the next animation file.";
+				MessageBoxW(nullptr, oss.str().c_str(), L"Error", MB_ICONEXCLAMATION | MB_OK);
 				skipAnim = true;
 			}
 			else
@@ -301,7 +563,7 @@ void Animation4ge::ImportAnimation()
 
 				gfcText.SetCursorPosition({ 45,1 });
 				std::ostringstream oss;
-				oss << (animImportIndex + 1) << " of " << files.size() << ":   ";
+				oss << (animImportIndex + 1) << " of " << wfiles.size() << ":   ";
 				gfcText.Write(oss.str());
 
 				newAnim = false;
@@ -339,7 +601,7 @@ void Animation4ge::ImportAnimation()
 				if (me.isLeftDoubleClick())
 				{
 					frameDim = { mousePos.x / FrameZoom.x,mousePos.y / FrameZoom.y };
-					Image spriteSheet = Image(files[animImportIndex].c_str());
+					Image spriteSheet = Image(wfiles[animImportIndex].c_str());
 					int2 sheetDim = { spriteSheet.GetWidth() / frameDim.x,spriteSheet.GetHeight() / frameDim.y };
 					if (sheetDim.x * sheetDim.y <= MaxFramesPerAnimation)
 					{
@@ -370,7 +632,7 @@ void Animation4ge::ImportAnimation()
 	}
 	else
 	{
-		files.clear();
+		wfiles.clear();
 		state = State::MainMenu;
 		stateChange = true;
 	}
@@ -389,17 +651,74 @@ void Animation4ge::ViewAnimations()
 	{
 		ResetDisplay();
 		mainMenuInterface.DisableAll();
-		mainMenuInterface.EnableInterface((int)UIs::BackBtn);
-
-		
-
+		mainMenuInterface.EnableInterfaces({ (int)UIs::BackBtn,(int)UIs::PlayPause,(int)UIs::Slow,(int)UIs::Fast,(int)UIs::Prev,(int)UIs::Next,(int)UIs::Zoom });
 		stateChange = false;
+
+		gfcText.SetCursorPosition({ 32,TextLayerRes.y / 16 - 2 });
+		gfcText.SetTextColor(Colors::BrightCyan);
+		std::ostringstream oss;
+		if (animations.size() < 10)
+		{
+			oss << "Animation XX of 0" << animations.size();
+		}
+		else
+		{
+			oss << "Animation XX of " << animations.size();
+		}
+		gfcText.Write(oss.str());
+		gfcText.SetCursorPosition((vec2i(gfcText.GetCursorPosition()) - vec2i{ 8, 0 }).GetVStruct());
+
+		zoomed = true;
+		gfx.SetViewport(-(gfx.GetViewWidth(MainLayer) / 2), -(gfx.GetViewHeight(MainLayer) / 2), gfx.GetViewWidth(MainLayer) * 2, gfx.GetViewHeight(MainLayer) * 2, MainLayer);
 	}
+	pCurAnimation = &animations[nAnimation];
+
+	bool prevZS = zoomed;
+
 	float time = clock.Mark();
 	mainMenuInterface.Update(time);
 	mainMenuInterface.Draw();
-	animations[nAnimation].Play(time);
+
+	if (!(zoomed == prevZS))
+	{
+		if (zoomed)
+		{
+			gfx.SetViewport(-(gfx.GetViewWidth(MainLayer) / 2), -(gfx.GetViewHeight(MainLayer) / 2), gfx.GetViewWidth(MainLayer) * 2, gfx.GetViewHeight(MainLayer) * 2, MainLayer);
+		}
+		else
+		{
+			gfx.SetViewport(0, 0, gfx.GetViewWidth(MainLayer) / 2, gfx.GetViewHeight(MainLayer) / 2, MainLayer);
+		}
+	}
+
+	if (!paused) animations[nAnimation].Play(time);
+
+	std::ostringstream oss;
+	if (nAnimation < 9)
+	{
+		oss << "0" << (nAnimation + 1);
+	}
+	else
+	{
+		oss << (nAnimation + 1);
+	}
+	gfcText.Write(oss.str());
+	gfcText.CursorLeft(); gfcText.CursorLeft();
+
 	int drawX = (MainLayerRes.x / 2) - (animations[nAnimation].GetFrameWidth() / 2);
 	int drawY = (MainLayerRes.y / 2) - (animations[nAnimation].GetFrameHeight() / 2);
 	animations[nAnimation].Draw(gfx, drawX, drawY, MainLayer);
+
+	if (stateChange)
+	{
+		if (zoomed) gfx.SetViewport(0, 0, gfx.GetViewWidth(MainLayer) / 2, gfx.GetViewHeight(MainLayer) / 2, MainLayer); zoomed = false;
+	}
 }
+
+
+
+
+
+
+
+

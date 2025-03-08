@@ -13,7 +13,7 @@ private:
 	float secsPerFrame;
 public:
 	Animation() = delete;
-	Animation(Image sprite_sheet, int2 sprite_size, int2 sheet_dim, int fps);
+	Animation(Image sprite_sheet, int2 sprite_size, int2 sheet_dim, float fps);
 	const int& GetFrameWidth() const;
 	const int& GetFrameHeight() const;
 	vec2i GetFrameSize() const;
@@ -22,7 +22,7 @@ public:
 	const float& GetCurrentFrameTime() const;
 	void SetCurrentFrameTime(float time);
 	float GetFPS() const;
-	void SetFPS(int fps);
+	void SetFPS(float fps);
 	const std::vector<Image>& GetFrames() const;
 	std::vector<Image>& GetFrames();
 	const Image& GetCurrentFrame() const;

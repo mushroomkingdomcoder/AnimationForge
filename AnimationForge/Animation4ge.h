@@ -18,18 +18,22 @@ private:
 	static constexpr int MainLayer					= 1;
 	static constexpr int TextLayer					= 2;
 	static constexpr int UILayer					= 3;
+	static constexpr int nUIObj						= 9;
 	static constexpr Color BackgroundColor			= Colors::Black;
 	static constexpr vec2i MaxAnimationFrameDim		= { 500,300 };
-	static constexpr int MaxFramesPerAnimation		= 64;
+	static constexpr int MaxFramesPerAnimation		= 128;
 	static constexpr int MaxAnimations				= 32;
 	static constexpr vec2i FrameSelectionWindowDim  = { 1000,600 };
 	static constexpr vec2i FrameZoom				= FrameSelectionWindowDim / MaxAnimationFrameDim;
-	static constexpr int DefaultFPS					= 15;
+	static constexpr float DefaultFPS				= 15.0f;
+	static constexpr float MinFPS					= 0.5f;
+	static constexpr float MaxFPS					= 90.0f;
+	static constexpr float StepFPS					= 1.25f;
 	static constexpr Color FrameSelectorColor		= Colors::BrightBlue;
 private:
 	enum class UIs
 	{
-		ViewAnimBtn, ImportAnimBtn, BackBtn
+		ViewAnimBtn, ImportAnimBtn, BackBtn, PlayPause, Slow, Fast, Prev, Next, Zoom
 	};
 private:
 	Clock clock;
@@ -54,14 +58,17 @@ private:
 		struct Refs
 		{
 			Mouse& mouse;
-			State& appState;
+			Animation4ge::State& appState;
 			bool& appStateChange;
 			const Window& wnd;
+			bool& paused;
+			bool& zoomed;
+			int& nAnimation;
+			Animation** ppCurAnimation;
+			const std::vector<Animation>& animations;
 		} refs;
-		bool hovering;
-	};
-	UIButtonData::Refs brefs;
-	std::vector<UIButtonData> mbd;
+		bool hovering[nUIObj];
+	} bdata;
 	std::unique_ptr<UserInterface::Object> pViewAnimationsBtn;
 	std::unique_ptr<UserInterface::Object> pImportAnimationBtn;
 	std::unique_ptr<UserInterface::Object> pBackButton;
@@ -74,7 +81,7 @@ private:
 	UserInterface mainMenuInterface;
 
 	void ImportAnimation();
-	std::vector<std::string> files;
+	std::vector<std::wstring> wfiles;
 	int animImportIndex;
 	bool newAnim;
 	bool skipAnim;
@@ -86,8 +93,10 @@ private:
 	int2 mousePos;
 
 	void ViewAnimations();
-	int nAnimation;
-	//Animation curAnimation;
+	int nAnimation = 0;
+	bool paused = false;
+	bool zoomed = true;
+	Animation* pCurAnimation = nullptr;
 
 public:
 	Animation4ge(Window& wnd);

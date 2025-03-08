@@ -1,9 +1,6 @@
 #include "Window.h"
 #include <assert.h>
 
-#define WNDEXCPT Window::Exception(__LINE__, __FILE__, GetLastError())
-#define WNDEXCPT_NOTE(note) Window::Exception(__LINE__, __FILE__, GetLastError(), note)
-
 LRESULT WINAPI Window::WndMsgSetup(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	if (Msg == WM_NCCREATE)
@@ -277,7 +274,7 @@ void Window::SetPseudoFullscreen()
 	MONITORINFO mInfo = { sizeof(mInfo) };
 	if (!GetMonitorInfo(hMon, &mInfo))
 	{
-		throw WNDEXCPT_NOTE("Failed retriving display monitor info!");
+		throw WNDEXCPT_NOTE("Failed retrieving display monitor info!");
 	}
 	SetWindowDimensions(mInfo.rcMonitor.right - mInfo.rcMonitor.left, mInfo.rcMonitor.bottom - mInfo.rcMonitor.top);
 	pseudoFullscreen = true;
@@ -316,4 +313,12 @@ std::optional<int> Window::ProcessMessages()
 	}
 	return std::optional<int>();
 }
+
+
+
+
+
+
+
+
 

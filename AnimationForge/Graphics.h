@@ -113,7 +113,7 @@ private:
 			renderFlag(true),
 			width(width),
 			height(height),
-			nPixels(width* height),
+			nPixels(width * height),
 			nImageBytes(nPixels * sizeof(Color)),
 			nImagePitchBytes(width * sizeof(Color)),
 			position(0.0f, 0.0f),
@@ -140,7 +140,7 @@ public:
 	Graphics() = delete;
 	Graphics(const Graphics& gfx) = delete;
 	Graphics operator =(const Graphics& gfx) = delete;
-	Graphics(HWND hWnd, int WindowWidth, int WindowHeight, std::vector<int2> display_layer_dims);
+	Graphics(HWND hWnd, int WindowWidth, int WindowHeight, std::vector<int2> display_layer_dims, bool alt_enter = false);
 	void NewFrame();
 	void EndFrame() const;
 	const bool& isAutoManaged(int layer = 0) const;
@@ -255,3 +255,10 @@ public:
 };
 inline PSS& Graphics::pss = PSS::Load();
 inline VSS& Graphics::vss = VSS::Load();
+
+
+
+
+
+
+

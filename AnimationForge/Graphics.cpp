@@ -23,7 +23,7 @@ void Graphics::UpdateViewportsAndFrameManager(float win_x_scale, float win_y_sca
 	pPipeline->OMSetRenderTargets(1, pFrameBufferView.GetAddressOf(), nullptr);
 }
 
-Graphics::Graphics(HWND hWnd, int WindowWidth, int WindowHeight, std::vector<int2> display_layer_dims)
+Graphics::Graphics(HWND hWnd, int WindowWidth, int WindowHeight, std::vector<int2> display_layer_dims, bool alt_enter)
 {
 	for (const int2& dld : display_layer_dims)
 	{
@@ -184,6 +184,17 @@ Graphics::Graphics(HWND hWnd, int WindowWidth, int WindowHeight, std::vector<int
 		layer.viewport.Height = (float)WindowHeight;
 		layer.viewport.MaxDepth = 1.0f;
 		layer.viewport.MinDepth = 0.0f;
+	}
+
+	if (!alt_enter)
+	{
+		ComPtr<IDXGIDevice> pDXGIDevice = nullptr;
+		GFXCHECK(pDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDXGIDevice));
+		ComPtr<IDXGIAdapter> pDXGIAdapter = nullptr;
+		GFXCHECK(pDXGIDevice->GetAdapter(&pDXGIAdapter));
+		ComPtr<IDXGIFactory> pDXGIFactory = nullptr;
+		GFXCHECK(pDXGIAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&pDXGIFactory));
+		pDXGIFactory->MakeWindowAssociation(hWnd, DXGI_MWA_NO_ALT_ENTER);
 	}
 }
 

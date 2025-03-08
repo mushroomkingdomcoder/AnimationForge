@@ -21,7 +21,7 @@ GraphicText::GraphicText(Color* p_paper, int2 paper_dim)
 	TextTexture(),
 	isUsingTexture(TextTexture)
 {
-	Image defaultCharset = Image("charsets\\default.bmp");
+	Image defaultCharset = Image(L"charsets\\default.bmp");
 	CharBitmaps.resize(charTableDim.x * charTableDim.y);
 	for (std::vector<bool>& cb : CharBitmaps)
 	{

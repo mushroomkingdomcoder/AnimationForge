@@ -2,50 +2,12 @@
 #include "Graphics.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "resource.h"
 #include <optional>
 #include <memory>
 
 class Window
 {
-private:
-	class WndClass
-	{
-	private:
-		const char* name = "FantasyForgeWnd";
-		HINSTANCE hInstance;
-	public:
-		WndClass()
-			:
-			hInstance(GetModuleHandle(NULL))
-		{
-			WNDCLASSEX wcd = {};
-			wcd.cbSize = sizeof(wcd);
-			wcd.lpfnWndProc = WndMsgSetup;
-			wcd.lpszClassName = name;
-			wcd.hInstance = hInstance;
-			wcd.cbClsExtra = 0;
-			wcd.cbWndExtra = 0;
-			wcd.hbrBackground = nullptr;
-			wcd.hCursor = nullptr;
-			wcd.hIcon = nullptr;
-			wcd.hIconSm = nullptr;
-			wcd.lpszMenuName = nullptr;
-			wcd.style = CS_OWNDC | CS_DBLCLKS;
-			RegisterClassEx(&wcd);
-		}
-		const char* GetName() const
-		{
-			return name;
-		}
-		HINSTANCE GetInstance() const
-		{
-			return hInstance;
-		}
-		~WndClass()
-		{
-			UnregisterClass(name, hInstance);
-		}
-	};
 public:
 	class Exception : public BaseException
 	{
@@ -73,6 +35,55 @@ public:
 		const char* GetType() const noexcept override
 		{
 			return "FantasyForge Win32 Exception";
+		}
+	};
+	#define WNDEXCPT Window::Exception(__LINE__, __FILE__, GetLastError())
+	#define WNDEXCPT_NOTE(note) Window::Exception(__LINE__, __FILE__, GetLastError(), note)
+	#define WNDCHECK(rval) if (!rval) { throw WNDEXCPT; }
+private:
+	class WndClass
+	{
+	private:
+		const char* name = "FantasyForgeWnd";
+		HINSTANCE hInstance;
+	public:
+		WndClass()
+			:
+			hInstance(GetModuleHandle(NULL))
+		{
+			int2 iconDim = { 0,0 };
+			int2 iconDimS = { 0,0 };
+			WNDCHECK((iconDim.x = GetSystemMetrics(SM_CXICON)));
+			WNDCHECK((iconDim.y = GetSystemMetrics(SM_CYICON)));
+			WNDCHECK((iconDimS.x = GetSystemMetrics(SM_CXSMICON)));
+			WNDCHECK((iconDimS.y = GetSystemMetrics(SM_CYSMICON)));
+
+			WNDCLASSEX wcd = {};
+			wcd.cbSize = sizeof(wcd);
+			wcd.lpfnWndProc = WndMsgSetup;
+			wcd.lpszClassName = name;
+			wcd.hInstance = hInstance;
+			wcd.cbClsExtra = 0;
+			wcd.cbWndExtra = 0;
+			wcd.hbrBackground = nullptr;
+			wcd.hCursor = nullptr;
+			wcd.hIcon = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, iconDim.x, iconDim.y, 0));
+			wcd.hIconSm = static_cast<HICON>(LoadImage(hInstance, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, iconDimS.x, iconDimS.y, 0));
+			wcd.lpszMenuName = nullptr;
+			wcd.style = CS_OWNDC | CS_DBLCLKS;
+			RegisterClassEx(&wcd);
+		}
+		const char* GetName() const
+		{
+			return name;
+		}
+		HINSTANCE GetInstance() const
+		{
+			return hInstance;
+		}
+		~WndClass()
+		{
+			UnregisterClass(name, hInstance);
 		}
 	};
 private:
@@ -124,6 +135,5 @@ public:
 	static std::optional<int> ProcessMessages();
 };
 inline Window::WndClass Window::wndcls;
-
 
 
